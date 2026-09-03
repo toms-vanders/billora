@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Billora.Subscriptions.Application\Billora.Subscriptions.Application.csproj" />
+  </ItemGroup>
+</Project>

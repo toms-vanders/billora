@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="src/Billora.Api/Billora.Api.csproj" />
+  <Project Path="src/Modules/Subscriptions/Billora.Subscriptions.Application/Billora.Subscriptions.Application.csproj" Id="53bd244f-1df3-49f2-b38d-37b556f7c269" />
+  <Project Path="src/Modules/Subscriptions/Billora.Subscriptions.Domain/Billora.Subscriptions.Domain.csproj" Id="36e2ee94-fccd-498c-a58e-85dc47375f49" />
+  <Project Path="src/Modules/Subscriptions/Billora.Subscriptions.Infrastructure/Billora.Subscriptions.Infrastructure.csproj" Id="320bac39-1408-43aa-ac4a-30d012b99f5f" />
+  <Project Path="tests/Billora.Subscriptions.Tests/Billora.Subscriptions.Tests.csproj" />
+</Solution>
