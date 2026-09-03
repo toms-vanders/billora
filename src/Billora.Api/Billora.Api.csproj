@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\Modules\Subscriptions\Billora.Subscriptions.Application\Billora.Subscriptions.Application.csproj" />
+    <ProjectReference Include="..\Modules\Subscriptions\Billora.Subscriptions.Infrastructure\Billora.Subscriptions.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
