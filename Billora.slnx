@@ -17,4 +17,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Billora.Subscriptions.Tests/Billora.Subscriptions.Tests.csproj" />
   </Folder>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
 </Solution>

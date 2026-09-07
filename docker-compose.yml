@@ -1,0 +1,37 @@
+volumes:
+  sqlserver_data:
+
+services:
+  billora.api:
+    image: ${DOCKER_REGISTRY-}billoraapi
+    container_name: billora.api
+
+    build:
+      context: .
+      dockerfile: src/Billora.Api/Dockerfile
+    ports:
+      - 5000:8080
+      - 5001:8081
+    environment:
+      - ConnectionStrings__Database=Server=sqlserver,1433;Database=${DB_DATABASE};User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    ports:
+      - 1433:1433
+    healthcheck:
+      test: ["CMD-SHELL", '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" || exit 1']
+      interval: 10s
+      retries: 10
+      start_period: 10s
+      timeout: 3s     
