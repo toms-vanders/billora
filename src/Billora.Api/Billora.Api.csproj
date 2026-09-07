@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
+    <PackageReference Include="Serilog.AspNetCore" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Modules\Subscriptions\Billora.Subscriptions.Application\Billora.Subscriptions.Application.csproj" />
