@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Billora.Api/Billora.Api.csproj" />
+    <Project Path="src/Billora.SharedKernel/Billora.SharedKernel.csproj" Id="0353afd4-49f0-4bea-9032-516ca44c63eb" />
   </Folder>
   <Folder Name="/src/Modules/" />
   <Folder Name="/src/Modules/Subscriptions/">

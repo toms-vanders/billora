@@ -142,15 +142,31 @@ csharp_space_between_method_declaration_parameter_list_parentheses = false
 csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 
+# License header
+file_header_template = unset
+
+# Xml project files
+
 # Static code analysis rule customizations
 
 # CA2007: Consider calling ConfigureAwait on the awaited task. No sync context in ASP.NET Core, so ConfigureAwait is a no-op.
 dotnet_diagnostic.CA2007.severity = none
 
-# License header
-file_header_template = unset
+# S1144: Unused private types or members should be removed
+dotnet_diagnostic.S1144.severity = none
 
-# Xml project files
+# CS8618: Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+dotnet_diagnostic.CS8618.severity = none
+
+# S2094: Classes should not be empty
+dotnet_diagnostic.S2094.severity = none
+
+# CA1008: Enums should have zero value
+dotnet_diagnostic.CA1008.severity = none
+
+# S4035: Classes implementing "IEquatable<T>" should be sealed
+dotnet_diagnostic.S4035.severity = none
+
 [*.{csproj,proj}]
 indent_size = 2
 
