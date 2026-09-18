@@ -9,6 +9,8 @@ public abstract class Entity : IEquatable<Entity>
         Id = id;
     }
 
+    protected static Guid NewId() => Guid.CreateVersion7();
+
     public bool Equals(Entity? other)
     {
         if (other == null) return false;

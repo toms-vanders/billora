@@ -11,7 +11,7 @@ public sealed class Subscription : Entity
     public BillingStrategy BillingStrategy { get; private set; }
     public BillingInterval BillingInterval { get; private set; }
     public SubscriptionStatus Status { get; private set; }
-    public int Quantity { get; private set; } = 1;
+    public int Quantity { get; private set; }
     public Money Price { get; private set; }
     public DateTimeOffset StartedAt { get; private set; }
     public int BillingAnchorDay => StartedAt.Day;
@@ -21,8 +21,36 @@ public sealed class Subscription : Entity
     public DateTimeOffset? CancelledAt { get; private set; }
     public DateTimeOffset? PastDueSince { get; private set; }
 
-
-    public Subscription(Guid id) : base(id)
+    public Subscription(
+        Guid id,
+        Guid tenantId,
+        Guid planId,
+        Guid subscriberId,
+        BillingStrategy billingStrategy,
+        BillingInterval billingInterval,
+        SubscriptionStatus status,
+        Money price,
+        DateTimeOffset startedAt,
+        DateTimeOffset? trialEndsAt,
+        DateRange currentPeriod,
+        bool cancelAtPeriodEnd,
+        DateTimeOffset? cancelledAt,
+        DateTimeOffset? pastDueSince,
+        int quantity = 1) : base(id)
     {
+        TenantId = tenantId;
+        PlanId = planId;
+        SubscriberId = subscriberId;
+        BillingStrategy = billingStrategy;
+        BillingInterval = billingInterval;
+        Status = status;
+        Price = price;
+        StartedAt = startedAt;
+        Quantity = quantity;
+        TrialEndsAt = trialEndsAt;
+        CurrentPeriod = currentPeriod;
+        CancelAtPeriodEnd = cancelAtPeriodEnd;
+        CancelledAt = cancelledAt;
+        PastDueSince = pastDueSince;
     }
 }

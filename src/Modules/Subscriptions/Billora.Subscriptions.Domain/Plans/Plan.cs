@@ -14,7 +14,24 @@ public sealed class Plan : Entity
     public int TrialDays { get; private set; }
     public bool IsActive { get; private set; }
 
-    public Plan(Guid id) : base(id)
+    public Plan(
+        Guid id,
+        Guid tenantId,
+        PlanName name,
+        PlanDescription? description,
+        Money price,
+        BillingStrategy billingStrategy,
+        BillingInterval billingInterval,
+        int trialDays,
+        bool isActive) : base(id)
     {
+        TenantId = tenantId;
+        Name = name;
+        Description = description;
+        Price = price;
+        BillingStrategy = billingStrategy;
+        BillingInterval = billingInterval;
+        TrialDays = trialDays;
+        IsActive = isActive;
     }
 }
