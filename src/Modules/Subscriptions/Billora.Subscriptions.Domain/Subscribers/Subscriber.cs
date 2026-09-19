@@ -1,4 +1,5 @@
 ﻿using Billora.SharedKernel;
+using Billora.Subscriptions.Domain.Subscribers.Events;
 
 namespace Billora.Subscriptions.Domain.Subscribers;
 
@@ -21,6 +22,8 @@ public sealed class Subscriber : Entity
     public static Subscriber Create(Guid tenantId, ExternalId externalId, SubscriberName name, Email email)
     {
         var subscriber = new Subscriber(NewId(), tenantId, externalId, name, email);
+
+        subscriber.RaiseDomainEvent(new SubscriberCreatedDomainEvent(subscriber.Id));
 
         return subscriber;
     }

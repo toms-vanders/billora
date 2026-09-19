@@ -2,6 +2,8 @@
 
 public abstract class Entity : IEquatable<Entity>
 {
+    private readonly List<IDomainEvent> _domainEvents = new();
+
     public Guid Id { get; init; }
 
     protected Entity(Guid id)
@@ -11,6 +13,26 @@ public abstract class Entity : IEquatable<Entity>
 
     protected static Guid NewId() => Guid.CreateVersion7();
 
+    #region Events
+
+    public IReadOnlyList<IDomainEvent> GetDomainEvents()
+    {
+        return _domainEvents.ToList();
+    }
+
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
+    }
+
+    protected void RaiseDomainEvent(IDomainEvent domainEvent)
+    {
+        _domainEvents.Add(domainEvent);
+    }
+
+    #endregion
+
+    #region Equality
     public bool Equals(Entity? other)
     {
         if (other == null) return false;
@@ -36,4 +58,5 @@ public abstract class Entity : IEquatable<Entity>
     {
         return !Equals(left, right);
     }
+    #endregion
 }
