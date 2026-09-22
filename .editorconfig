@@ -1,4 +1,4 @@
-# editorconfig.org
+﻿# editorconfig.org
 
 # top-most EditorConfig file
 root = true
@@ -189,6 +189,14 @@ dotnet_diagnostic.IDE0046.severity = none
 
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = none
+
+# CA1030: Consider making a method an event. A DDD domain event is a record collected on the
+# aggregate and dispatched after persistence, not a .NET multicast delegate.
+dotnet_diagnostic.CA1030.severity = none
+
+# CA1040: Avoid empty interfaces. IDomainEvent identifies domain event types for the collection
+# on Entity and for MediatR dispatch - a compile-time contract, not a metadata marker.
+dotnet_diagnostic.CA1040.severity = none
 
 [*.{csproj,proj}]
 indent_size = 2

@@ -1,5 +1,6 @@
 ﻿using Billora.SharedKernel;
 using Billora.Subscriptions.Domain.Pricing;
+using Billora.Subscriptions.Domain.Subscriptions.Events;
 
 namespace Billora.Subscriptions.Domain.Subscriptions;
 
@@ -21,7 +22,7 @@ public sealed class Subscription : Entity
     public DateTimeOffset? CancelledAt { get; private set; }
     public DateTimeOffset? PastDueSince { get; private set; }
 
-    public Subscription(
+    private Subscription(
         Guid id,
         Guid tenantId,
         Guid planId,
@@ -52,5 +53,29 @@ public sealed class Subscription : Entity
         CancelAtPeriodEnd = cancelAtPeriodEnd;
         CancelledAt = cancelledAt;
         PastDueSince = pastDueSince;
+    }
+
+    public static Subscription Create(Guid id,
+        Guid tenantId,
+        Guid planId,
+        Guid subscriberId,
+        BillingStrategy billingStrategy,
+        BillingInterval billingInterval,
+        SubscriptionStatus status,
+        Money price,
+        DateTimeOffset startedAt,
+        DateTimeOffset? trialEndsAt,
+        DateRange currentPeriod,
+        bool cancelAtPeriodEnd,
+        DateTimeOffset? cancelledAt,
+        DateTimeOffset? pastDueSince,
+        int quantity = 1)
+    {
+        var subscription = new Subscription(NewId(), tenantId, planId, subscriberId, billingStrategy, billingInterval,
+            status, price, startedAt, trialEndsAt, currentPeriod, cancelAtPeriodEnd, cancelledAt, pastDueSince, quantity);
+
+        subscription.RaiseDomainEvent(new SubscriptionCreatedDomainEvent(subscription.Id));
+
+        return subscription;
     }
 }

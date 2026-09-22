@@ -1,4 +1,5 @@
 ﻿using Billora.SharedKernel;
+using Billora.Subscriptions.Domain.Plans.Events;
 using Billora.Subscriptions.Domain.Pricing;
 
 namespace Billora.Subscriptions.Domain.Plans;
@@ -33,5 +34,22 @@ public sealed class Plan : Entity
         BillingInterval = billingInterval;
         TrialDays = trialDays;
         IsActive = isActive;
+    }
+
+    public static Plan Create(
+        Guid tenantId,
+        PlanName name,
+        PlanDescription? description,
+        Money price,
+        BillingStrategy billingStrategy,
+        BillingInterval billingInterval,
+        int trialDays,
+        bool isActive)
+    {
+        var plan = new Plan(NewId(), tenantId, name, description, price, billingStrategy, billingInterval, trialDays, isActive);
+
+        plan.RaiseDomainEvent(new PlanCreatedDomainEvent(plan.Id));
+
+        return plan;
     }
 }
