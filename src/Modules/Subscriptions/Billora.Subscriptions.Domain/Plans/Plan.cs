@@ -6,33 +6,24 @@ namespace Billora.Subscriptions.Domain.Plans;
 
 public sealed class Plan : Entity
 {
-    public Guid TenantId { get; private set; }
+    public Guid TenantId { get; }
     public PlanName Name { get; private set; }
     public PlanDescription? Description { get; private set; }
-    public Money Price { get; private set; }
-    public BillingStrategy BillingStrategy { get; private set; }
-    public BillingInterval BillingInterval { get; private set; }
-    public int TrialDays { get; private set; }
+    public PlanTerms Terms { get; private set; }
     public bool IsActive { get; private set; }
 
-    public Plan(
+    private Plan(
         Guid id,
         Guid tenantId,
         PlanName name,
         PlanDescription? description,
-        Money price,
-        BillingStrategy billingStrategy,
-        BillingInterval billingInterval,
-        int trialDays,
+        PlanTerms terms,
         bool isActive) : base(id)
     {
         TenantId = tenantId;
         Name = name;
         Description = description;
-        Price = price;
-        BillingStrategy = billingStrategy;
-        BillingInterval = billingInterval;
-        TrialDays = trialDays;
+        Terms = terms;
         IsActive = isActive;
     }
 
@@ -40,16 +31,45 @@ public sealed class Plan : Entity
         Guid tenantId,
         PlanName name,
         PlanDescription? description,
-        Money price,
-        BillingStrategy billingStrategy,
-        BillingInterval billingInterval,
-        int trialDays,
-        bool isActive)
+        PlanTerms terms)
     {
-        var plan = new Plan(NewId(), tenantId, name, description, price, billingStrategy, billingInterval, trialDays, isActive);
+        var plan = new Plan(NewId(), tenantId, name, description, terms, true);
 
         plan.RaiseDomainEvent(new PlanCreatedDomainEvent(plan.Id));
 
         return plan;
     }
+
+    public void UpdateDetails(PlanName name, PlanDescription? description)
+    {
+        Name = name;
+        Description = description;
+    }
+
+    public void ChangeTerms(PlanTerms terms) => Terms = terms;
+
+    public Result Deactivate()
+    {
+        if (!IsActive)
+        {
+            return Result.Failure(PlanErrors.AlreadyInactive);
+        }
+
+        IsActive = false;
+
+        return Result.Success();
+    }
+
+    public Result Activate()
+    {
+        if (IsActive)
+        {
+            return Result.Failure(PlanErrors.AlreadyActive);
+        }
+
+        IsActive = true;
+
+        return Result.Success();
+    }
+
 }

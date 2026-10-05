@@ -1,3 +1,14 @@
-﻿namespace Billora.Subscriptions.Domain.Plans;
+﻿using Billora.SharedKernel;
 
-public sealed record PlanName(string Value);
+namespace Billora.Subscriptions.Domain.Plans;
+
+public sealed record PlanName
+{
+    public const int MaxLength = 100;
+
+    public string Value { get; }
+
+    public PlanName(string value) => Value = StringGuard.Require(value, MaxLength);
+
+    public override string ToString() => Value;
+}

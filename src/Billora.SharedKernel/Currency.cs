@@ -8,7 +8,7 @@ public sealed record Currency
 
     private Currency(string code) => Code = code;
 
-    public string Code { get; init; }
+    public string Code { get; }
 
     public static Currency FromCode(string code)
     {

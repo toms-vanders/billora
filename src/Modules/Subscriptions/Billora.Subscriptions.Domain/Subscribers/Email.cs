@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Mail;
+using Billora.SharedKernel;
 
 namespace Billora.Subscriptions.Domain.Subscribers;
 
@@ -11,15 +12,7 @@ public sealed record Email
 
     public Email(string value)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(value);
-
-        var normalized = value.Trim().ToLowerInvariant();
-
-        if (normalized.Length > MaxLength)
-        {
-            throw new ArgumentException(
-                $"Email must be at most {MaxLength} characters.", nameof(value));
-        }
+        var normalized = StringGuard.Require(value, MaxLength).ToLowerInvariant();
 
         if (!MailAddress.TryCreate(normalized, out var parsed) || parsed.Address != normalized)
         {

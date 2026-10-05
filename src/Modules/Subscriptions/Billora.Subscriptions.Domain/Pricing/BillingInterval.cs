@@ -1,7 +1,24 @@
 ﻿namespace Billora.Subscriptions.Domain.Pricing;
 
-public sealed record BillingInterval(BillingUnit Unit, int Count)
+public sealed record BillingInterval
 {
+    public BillingUnit Unit { get; }
+    public int Count { get; }
+
+    public BillingInterval(BillingUnit unit, int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
+
+        Unit = unit;
+        Count = count;
+    }
+
+    /// <summary>
+    /// Advances <paramref name="date"/> by one interval, re-expanding to
+    /// <paramref name="billingAnchorDay"/> wherever the target month has room for it.
+    /// A subscriber anchored on the 31st lands on Feb 28, then Mar 31 — not Mar 28 —
+    /// so chaining from each period's end stays on the anchor instead of drifting.
+    /// </summary>
     public DateTimeOffset AddTo(DateTimeOffset date, int billingAnchorDay) => Unit switch
     {
         BillingUnit.Day => date.AddDays(Count),
@@ -28,5 +45,3 @@ public sealed record BillingInterval(BillingUnit Unit, int Count)
             date.Offset);
     }
 }
-
-
