@@ -5,19 +5,19 @@ namespace Billora.Subscriptions.Domain.Subscribers;
 
 public sealed class Subscriber : Entity
 {
+    public Guid TenantId { get; }
+    public ExternalId ExternalId { get; }
+    public SubscriberName Name { get; private set; }
+    public Email Email { get; private set; }
+
     private Subscriber(Guid id, Guid tenantId, ExternalId externalId, SubscriberName name, Email email)
-        : base(id)
+    : base(id)
     {
         TenantId = tenantId;
         ExternalId = externalId;
         Name = name;
         Email = email;
     }
-
-    public Guid TenantId { get; private set; }
-    public ExternalId ExternalId { get; private set; }
-    public SubscriberName Name { get; private set; }
-    public Email Email { get; private set; }
 
     public static Subscriber Create(Guid tenantId, ExternalId externalId, SubscriberName name, Email email)
     {
@@ -27,4 +27,8 @@ public sealed class Subscriber : Entity
 
         return subscriber;
     }
+
+    public void Rename(SubscriberName name) => Name = name;
+
+    public void ChangeEmail(Email email) => Email = email;
 }

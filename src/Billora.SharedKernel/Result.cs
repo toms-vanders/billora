@@ -34,11 +34,11 @@ public class Result
         value is not null ? Success(value) : Failure<TValue>(Error.NullValue);
 }
 
-public class Result<TValue> : Result
+public sealed class Result<TValue> : Result
 {
     private readonly TValue? _value;
 
-    protected internal Result(TValue? value, bool isSuccess, Error error)
+    internal Result(TValue? value, bool isSuccess, Error error)
         : base(isSuccess, error)
     {
         _value = value;
