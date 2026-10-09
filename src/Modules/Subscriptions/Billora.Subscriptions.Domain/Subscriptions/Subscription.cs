@@ -6,20 +6,19 @@ namespace Billora.Subscriptions.Domain.Subscriptions;
 
 public sealed class Subscription : Entity
 {
-    public Guid TenantId { get; private set; }
-    public Guid PlanId { get; private set; }
-    public Guid SubscriberId { get; private set; }
-    public BillingStrategy BillingStrategy { get; private set; }
-    public BillingInterval BillingInterval { get; private set; }
+    public Guid TenantId { get; }
+    public Guid PlanId { get; }
+    public Guid SubscriberId { get; }
+    public PlanTerms Terms { get; }
+    public int Quantity { get; }
+    public DateTimeOffset StartedAt { get; }
+    public int BillingAnchorDay { get; }
+    public DateTimeOffset? TrialEndsAt { get; }
     public SubscriptionStatus Status { get; private set; }
-    public int Quantity { get; private set; }
-    public Money Price { get; private set; }
-    public DateTimeOffset StartedAt { get; private set; }
-    public int BillingAnchorDay => StartedAt.Day;
-    public DateTimeOffset? TrialEndsAt { get; private set; }
     public DateRange CurrentPeriod { get; private set; }
     public bool CancelAtPeriodEnd { get; private set; }
-    public DateTimeOffset? CancelledAt { get; private set; }
+    public DateTimeOffset? CancelRequestedAt { get; private set; }
+    public DateTimeOffset? EndedAt { get; private set; }
     public DateTimeOffset? PastDueSince { get; private set; }
 
     private Subscription(
@@ -27,55 +26,187 @@ public sealed class Subscription : Entity
         Guid tenantId,
         Guid planId,
         Guid subscriberId,
-        BillingStrategy billingStrategy,
-        BillingInterval billingInterval,
-        SubscriptionStatus status,
-        Money price,
+        PlanTerms terms,
+        int quantity,
         DateTimeOffset startedAt,
+        int billingAnchorDay,
         DateTimeOffset? trialEndsAt,
+        SubscriptionStatus status,
         DateRange currentPeriod,
         bool cancelAtPeriodEnd,
-        DateTimeOffset? cancelledAt,
-        DateTimeOffset? pastDueSince,
-        int quantity = 1) : base(id)
+        DateTimeOffset? cancelRequestedAt,
+        DateTimeOffset? endedAt,
+        DateTimeOffset? pastDueSince) : base(id)
     {
         TenantId = tenantId;
         PlanId = planId;
         SubscriberId = subscriberId;
-        BillingStrategy = billingStrategy;
-        BillingInterval = billingInterval;
-        Status = status;
-        Price = price;
-        StartedAt = startedAt;
+        Terms = terms;
         Quantity = quantity;
+        StartedAt = startedAt;
+        BillingAnchorDay = billingAnchorDay;
         TrialEndsAt = trialEndsAt;
+        Status = status;
         CurrentPeriod = currentPeriod;
         CancelAtPeriodEnd = cancelAtPeriodEnd;
-        CancelledAt = cancelledAt;
+        CancelRequestedAt = cancelRequestedAt;
+        EndedAt = endedAt;
         PastDueSince = pastDueSince;
     }
 
-    public static Subscription Create(Guid id,
+    public static Subscription Create(
         Guid tenantId,
         Guid planId,
         Guid subscriberId,
-        BillingStrategy billingStrategy,
-        BillingInterval billingInterval,
-        SubscriptionStatus status,
-        Money price,
+        PlanTerms terms,
+        int quantity,
         DateTimeOffset startedAt,
-        DateTimeOffset? trialEndsAt,
-        DateRange currentPeriod,
-        bool cancelAtPeriodEnd,
-        DateTimeOffset? cancelledAt,
-        DateTimeOffset? pastDueSince,
-        int quantity = 1)
+        bool withTrial)
     {
-        var subscription = new Subscription(NewId(), tenantId, planId, subscriberId, billingStrategy, billingInterval,
-            status, price, startedAt, trialEndsAt, currentPeriod, cancelAtPeriodEnd, cancelledAt, pastDueSince, quantity);
+        if (startedAt.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Start date must be UTC.", nameof(startedAt));
+
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
+
+        var trialDays = withTrial ? terms.TrialDays : 0;
+        var hasTrial = trialDays > 0;
+
+        DateTimeOffset? trialEndsAt = hasTrial ? startedAt.AddDays(trialDays) : null;
+
+        var billingAnchorDay = (trialEndsAt ?? startedAt).Day;
+
+        var periodEnd = trialEndsAt ?? terms.Interval.AddTo(startedAt, billingAnchorDay);
+
+        var status = hasTrial ? SubscriptionStatus.Trialing : SubscriptionStatus.Active;
+
+        var subscription = new Subscription(NewId(), tenantId, planId, subscriberId, terms, quantity,
+            startedAt, billingAnchorDay, trialEndsAt, status, new DateRange(startedAt, periodEnd), false, null, null, null);
 
         subscription.RaiseDomainEvent(new SubscriptionCreatedDomainEvent(subscription.Id));
 
         return subscription;
+    }
+
+    public Result MarkPastDue(DateTimeOffset utcNow)
+    {
+        if (Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired)
+            return Result.Failure(SubscriptionErrors.Terminated);
+
+        if (Status is SubscriptionStatus.PastDue)
+            return Result.Failure(SubscriptionErrors.AlreadyPastDue);
+
+        Status = SubscriptionStatus.PastDue;
+
+        PastDueSince = utcNow;
+
+        return Result.Success();
+    }
+
+    public Result Expire(DateTimeOffset utcNow)
+    {
+        if (Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired)
+            return Result.Failure(SubscriptionErrors.Terminated);
+
+        if (Status is not SubscriptionStatus.Trialing)
+            return Result.Failure(SubscriptionErrors.NotTrialing);
+
+        EndedAt = utcNow;
+        Status = SubscriptionStatus.Expired;
+
+        return Result.Success();
+    }
+
+    public Result Cancel(DateTimeOffset utcNow, bool immediately)
+    {
+        if (Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired)
+            return Result.Failure(SubscriptionErrors.Terminated);
+
+        CancelRequestedAt ??= utcNow;
+
+        if (immediately)
+        {
+            ApplyCancellation(utcNow);
+        }
+        else
+        {
+            CancelAtPeriodEnd = true;
+        }
+
+        return Result.Success();
+    }
+
+    public Result Renew(DateTimeOffset utcNow)
+    {
+        if (Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired)
+            return Result.Failure(SubscriptionErrors.Terminated);
+
+        if (Status is not SubscriptionStatus.Active)
+            return Result.Failure(SubscriptionErrors.NotActive);
+
+        if (CancelAtPeriodEnd)
+        {
+            ApplyCancellation(utcNow);
+
+            return Result.Success();
+        }
+
+        StartNewPeriod();
+
+        return Result.Success();
+    }
+
+    public Result Activate(DateTimeOffset utcNow)
+    {
+        if (Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired)
+            return Result.Failure(SubscriptionErrors.Terminated);
+
+        if (Status is SubscriptionStatus.Active)
+            return Result.Failure(SubscriptionErrors.AlreadyActive);
+
+        if (Status is SubscriptionStatus.Trialing)
+        {
+            if (CancelAtPeriodEnd)
+            {
+                ApplyCancellation(utcNow);
+                return Result.Success();
+            }
+
+            StartNewPeriod();
+        }
+
+        Status = SubscriptionStatus.Active;
+
+        return Result.Success();
+    }
+
+    public Result Resume()
+    {
+        if (Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired)
+            return Result.Failure(SubscriptionErrors.Terminated);
+
+        if (CancelAtPeriodEnd)
+        {
+            CancelAtPeriodEnd = false;
+            CancelRequestedAt = null;
+        }
+
+        return Result.Success();
+    }
+
+    private void StartNewPeriod()
+    {
+        var start = CurrentPeriod.End;
+        var end = Terms.Interval.AddTo(start, BillingAnchorDay);
+
+        CurrentPeriod = new DateRange(start, end);
+    }
+
+    private void ApplyCancellation(DateTimeOffset utcNow)
+    {
+        Status = SubscriptionStatus.Cancelled;
+        EndedAt = utcNow;
+        CancelAtPeriodEnd = false;
+
+        RaiseDomainEvent(new SubscriptionCancelledDomainEvent(Id));
     }
 }
