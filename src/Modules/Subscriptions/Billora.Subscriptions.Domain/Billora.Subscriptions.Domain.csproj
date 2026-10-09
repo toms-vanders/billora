@@ -1,3 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Billora.SharedKernel\Billora.SharedKernel.csproj" />
+  </ItemGroup>
 </Project>
