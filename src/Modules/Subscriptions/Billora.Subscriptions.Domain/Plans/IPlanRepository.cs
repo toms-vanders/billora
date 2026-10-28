@@ -3,5 +3,5 @@
 public interface IPlanRepository
 {
     Task<Plan?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-
+    void Add(Plan plan);
 }
