@@ -9,4 +9,7 @@ public static class PlanErrors
 
     public static readonly Error AlreadyActive = new(
         "Plan.AlreadyActive", "The plan is already active.");
+    public static Error NotFound(Guid planId) => new(
+    "Plan.NotFound", $"The plan with Id '{planId}' was not found.");
+
 }
