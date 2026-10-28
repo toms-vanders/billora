@@ -21,9 +21,7 @@ internal sealed class UpdatePlanDetailsCommandHandler : ICommandHandler<UpdatePl
         var plan = await _planRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (plan is null)
-        {
             return Result.Failure(PlanErrors.NotFound(request.Id));
-        }
 
         plan.UpdateDetails(
             new PlanName(request.Name),

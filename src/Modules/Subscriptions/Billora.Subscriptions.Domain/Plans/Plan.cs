@@ -46,6 +46,10 @@ public sealed class Plan : Entity
         Description = description;
     }
 
+    /// <summary>
+    /// Replaces the terms offered to new subscriptions. Existing subscriptions keep the terms
+    /// they snapshotted at creation; migrating them is a separate, explicit operation.
+    /// </summary>
     public void ChangeTerms(PlanTerms terms) => Terms = terms;
 
     public Result Deactivate()

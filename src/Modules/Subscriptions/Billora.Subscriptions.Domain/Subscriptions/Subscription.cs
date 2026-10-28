@@ -9,7 +9,13 @@ public sealed class Subscription : Entity
     public Guid TenantId { get; }
     public Guid PlanId { get; }
     public Guid SubscriberId { get; }
+
+    /// <summary>
+    /// Snapshotted from the plan at creation and fixed for the subscription's lifetime.
+    /// Billing and reporting read this, not the plan's current terms.
+    /// </summary>
     public PlanTerms Terms { get; }
+
     public int Quantity { get; }
     public DateTimeOffset StartedAt { get; }
     public int BillingAnchorDay { get; }
