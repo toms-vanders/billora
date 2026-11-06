@@ -30,5 +30,17 @@ public sealed class Subscriber : Entity
 
     public void Rename(SubscriberName name) => Name = name;
 
-    public void ChangeEmail(Email email) => Email = email;
+    public void ChangeEmail(Email email)
+    {
+        if (Email == email)
+        {
+            return;
+        }
+
+        var previous = Email;
+
+        Email = email;
+
+        RaiseDomainEvent(new SubscriberEmailChangedDomainEvent(Id, previous.Value, email.Value));
+    }
 }

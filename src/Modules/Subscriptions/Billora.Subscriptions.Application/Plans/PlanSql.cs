@@ -10,6 +10,6 @@ internal static class PlanSql
         SELECT id, tenant_id, name, description, price, currency_code,
                interval_unit, interval_count, strategy, trial_days,
                is_active, created_at, updated_at
-        FROM plans
+        FROM subscriptions.plans
         """;
 }
